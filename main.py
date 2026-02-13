@@ -28,7 +28,7 @@ medium = [
 hard = [
     [1, 6, 7],
     [5, 0, 3],
-    [8, 2, 4]
+    [4, 8, 2]
 ]
 test_puzzle = [
     [1, 2, 3],
@@ -50,7 +50,7 @@ def main():
             break
         print("Invalid choice. Please enter 1 or 2.")
     if choice == "1":
-        print("1: Super Easy \n 2: Easy \n 3: Medium \n 4: Hard")
+        print(" 1: Super Easy \n 2: Easy \n 3: Medium \n 4: Hard")
         preset_puzzles = {
             "1": ("Super Easy", super_easy),
             "2": ("Easy", easy),
@@ -60,8 +60,8 @@ def main():
         while True:
             preset_choice = input("Select a preset puzzle (1-4): ")
             if preset_choice in preset_puzzles:
-                puzzle_name, initial_state, goal_state = preset_puzzles[preset_choice]
-                print(f"\nYou selected: {puzzle_name}")
+                name, initial_state = preset_puzzles[preset_choice]
+                print(f"\nYou selected: {name}")
                 break
             else:
                 print("Invalid choice. Please select a valid preset puzzle (1-4).")
@@ -76,7 +76,7 @@ def main():
     
     problem = Problem(initial_state, goal_state_to_use)
 
-    algorthms = {
+    algorithms = {
         "1": ("Uniform Cost Search", None),
         "2": ("A* with Misplaced Tile Heuristic", misplaced_tile_heuristic),
         "3": ("A* with Manhattan Distance Heuristic", manhattan_distance_heuristic)
@@ -86,16 +86,19 @@ def main():
         print("\nSelect a search algorithm: \n 1. Uniform Cost Search \n 2. A* with Misplaced Tile Heuristic \n 3. A* with Manhattan Distance Heuristic")
         alg_choice = input("Enter your choice: ")
 
-        if alg_choice in algorthms:
-            alg_name, queue_func = algorthms[alg_choice]
+        if alg_choice in algorithms:
+            alg_name, queue_func = algorithms[alg_choice]
             break
         else:
             print("Invalid choice. Please select a valid algorithm (1, 2, or 3).")
             # redo if puzzle has wrong option
     print(f"\nRunning {alg_name}")
     solution = general_search(problem, queue_func)
-    if solution != "failed":
-        trace_back(solution)
+    if solution is not None:
+        path = trace_back(solution)
+        print("\nSolution Path:")
+        for step in path:
+            print_state(step.STATE)
     else:
         print("No solution found.")
 

@@ -1,4 +1,4 @@
-import heapq # used for priorirty queue to get the lowest cost node
+import heapq # used for priority queue to get the lowest cost node
 from copy import deepcopy
 
 # following are helper functions for the game
@@ -34,12 +34,12 @@ def generate_operation(state):
             moves.append((action, new_state))
     return moves
 
-def print_state(state): # printinng the puzzle state
+def print_state(state): # printing the puzzle state
     for row in state:
         print(row)
     print()
 
-def validate_puzzle(puzzle): # added to ensure that the input it valid, as they could input whatever...
+def validate_puzzle(puzzle): # added to ensure that the input is valid, as they could input whatever...
     size = len(puzzle)
     for row in puzzle:
         if len(row) != size:
@@ -85,7 +85,7 @@ class Problem:
     
     def OPERATORS(self, state):
         return generate_operation(state)
-# expand andoe to generate its successors nodes
+# expand and to generate its successors nodes
 def EXPAND(node, problem): 
     successors = []
     for action, new_state in problem.OPERATORS(node.STATE):
@@ -99,7 +99,7 @@ def EXPAND(node, problem):
         successors.append(new_node)
     return successors
 
-# calcualte h(n) as number of misplaced tiles
+# calculate h(n) as number of misplaced tiles
 def misplaced_tile_heuristic(state, goal_state):
     count = 0
     size = len(state)
@@ -125,7 +125,7 @@ def manhattan_distance_heuristic(state, goal_state):
                         break
     return distance
 
-# general serach alogirthms
+# general serach algorithms
 def general_search(problem, heuristic_function=None):
 #     initial_node = Node(STATE=problem.INITIAL_STATE)
 #     nodes = []
@@ -140,39 +140,45 @@ def general_search(problem, heuristic_function=None):
 #         nodes = QUEUEING_FUNCTION(nodes, successors, problem)
 #     
 #    return "failed"
-    initial_node = Node(STATE=problem.INITIAL_STATE)
+    initial_h = 0 if heuristic_function is None else heuristic_function(problem.INITIAL_STATE, problem.goal_state)
+    initial_node = Node(STATE=problem.INITIAL_STATE, PATH_COST=0, HEURISTIC_COST=initial_h)
+    initial_node.A_COST = initial_node.PATH_COST + initial_node.HEURISTIC_COST
     nodes = []
     heapq.heappush(nodes, initial_node)
     
     explored_nodes = set()
-    max_queue_size = 0
+    max_queue_size = 1
     nodes_expanded = 0
 
-    while True:
+    while nodes:
         # track the maximum queue size reached
         max_queue_size = max(max_queue_size, len(nodes))
-        if len(nodes) == 0:
-            return "failed, no soltion found"
         node = heapq.heappop(nodes)
+        
         if problem.GOAL_TEST(node.STATE):
-            print(f"\nSolution found! \n Path cost: {node.PATH_COST} \n Max queue size: {max_queue_size}")
+            print(f"\nSolution found! \n Path cost: {node.PATH_COST} \n Number of nodes expanded: {nodes_expanded} \n Max queue size: {max_queue_size}")
             return node
         
         # to avoid re-expanding the same nodes
         state_str = str(node.STATE)
         if state_str in explored_nodes:
             continue
-        explored_nodes.add(state_str)
-        nodes_expanded +=1
-        successors = EXPAND(node, problem)
+        print(f"The best state to expand with a g(n) = {node.PATH_COST} and h(n) = {node.HEURISTIC_COST} is:")
+        print_state(node.STATE)
 
-        for s in successors:
-            if heuristic_function is None:
-                s.HEURISTIC_COST = 0
-            else:
-                s.HEURISTIC_COST = heuristic_function(s.STATE, problem.goal_state)
-            s.A_COST = s.PATH_COST + s.HEURISTIC_COST
-            heapq.heappush(nodes, s)
+        nodes_expanded += 1
+        for action, new_state in problem.OPERATORS(node.STATE):
+            child_state_str = str(new_state)
+            if child_state_str not in explored_nodes:
+                h = 0 if heuristic_function is None else heuristic_function(
+                    new_state, problem.goal_state
+                )
+                child = Node(STATE=new_state, PARENT=node, ACTION=action, PATH_COST=node.PATH_COST + 1, HEURISTIC_COST=h)
+                child.A_COST = child.PATH_COST + child.HEURISTIC_COST
+                heapq.heappush(nodes, child)
+        explored_nodes.add(state_str)
+
+    return None
 
 def trace_back(goal_node):
     path = []
