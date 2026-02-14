@@ -63,6 +63,7 @@ def validate_puzzle(puzzle): # added to ensure that the input is valid, as they 
             return False, f"Duplicate numbers found: {duplicates}"
     return True, ""
 
+# nodes in the search tree
 class Node:
     def __init__(self, STATE, PARENT=None, ACTION="", PATH_COST=0, HEURISTIC_COST=0):
         self.STATE = STATE
@@ -73,7 +74,8 @@ class Node:
         self.A_COST = PATH_COST + HEURISTIC_COST
     def __lt__(self, other):
         return self.A_COST < other.A_COST
-    
+
+# define the search problem: initial, goal states and moves  
 class Problem:
     def __init__(self, INITIAL_STATE, goal_state):
         self.INITIAL_STATE = INITIAL_STATE
@@ -99,7 +101,7 @@ def EXPAND(node, problem):
         successors.append(new_node)
     return successors
 
-# calculate h(n) as number of misplaced tiles
+# calculate h(n) as number of misplaced tiles (aka not in their goal position)
 def misplaced_tile_heuristic(state, goal_state):
     count = 0
     size = len(state)
@@ -109,7 +111,7 @@ def misplaced_tile_heuristic(state, goal_state):
                 count += 1
     return count
 
-# h(n) as sum of manhattan distances
+# h(n) as sum of manhattan distances of all tiles from their goal positions
 def manhattan_distance_heuristic(state, goal_state):
     distance = 0
     size = len(state)
@@ -180,6 +182,7 @@ def general_search(problem, heuristic_function=None):
 
     return None
 
+# reconstructs the solution path from start to goal
 def trace_back(goal_node):
     path = []
     currnode = goal_node
@@ -189,9 +192,11 @@ def trace_back(goal_node):
     path.reverse()
     return path
 
+# gets user input and validates it
 def get_user_puzzle():
     while True:
         print("\nEnter puzzle size")
+        # size for any n by n puzzle
         try:
             size = int(input("Size: "))
             if size < 2:
@@ -219,6 +224,7 @@ def get_user_puzzle():
         except ValueError as e:
             print(f"Invalid input: {e}. Please re-enter the puzzle.")
 
+# based of the nxn it creates a goal state for that
 def create_goal_state(size):
     goal = []
     num = 1
